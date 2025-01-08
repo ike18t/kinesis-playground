@@ -1,0 +1,25 @@
+{
+  "name": "kinesis-test",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "gen:producer": "avro-ts schema.avsc",
+    "gen:consumer": "ts-node consumer-schema-fetch.ts",
+    "producer:start": "ts-node producer.ts",
+    "consumer:start": "ts-node consumer.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-kinesis": "^3.723.0",
+    "dotenv-flow": "^4.1.0",
+    "env-var": "^7.5.0",
+    "glue-schema-registry": "file:./glue-schema-registry"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@ovotech/avro-ts-cli": "^3.6.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "type": "record",
+  "name": "testProperty",
+  "namespace": "ike.test.namespace",
+  "fields": [{ "name": "demo", "type": "string" }]
+}

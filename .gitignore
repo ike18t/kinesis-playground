@@ -1,0 +1,4 @@
+node_modules
+volume
+*.gen.ts
+*.avsc.ts
