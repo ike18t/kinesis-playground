@@ -9,14 +9,16 @@ import { Type } from "avsc";
 import { IkeTestNamespace } from "./schema.avsc.ts";
 import { config } from "./config";
 
-(async () => {
-  const registry = new GlueSchemaRegistry<IkeTestNamespace.TestProperty>(
-    config.registryName(),
-    {
-      region: config.awsRegion(),
-    }
-  );
+const registry = new GlueSchemaRegistry<IkeTestNamespace.TestProperty>(
+  config.registryName(),
+  {
+    region: config.awsRegion(),
+  }
+);
 
+const kinesis = new KinesisClient({ region: config.awsRegion() });
+
+(async () => {
   let schemaId: string | undefined;
 
   try {
@@ -38,8 +40,6 @@ import { config } from "./config";
     throw new Error("Schema ID is undefined");
   }
 
-  const kinesis = new KinesisClient({ region: config.awsRegion() });
-
   const sendMessage = async (message: IkeTestNamespace.TestProperty) => {
     const type = Type.forSchema(
       JSON.parse(IkeTestNamespace.TestPropertySchema)
@@ -54,7 +54,7 @@ import { config } from "./config";
         StreamName: config.streamName(),
         Records: [
           {
-            Data: await registry.encode(schemaId, message, { compress: true }),
+            Data: await registry.encode(schemaId, message),
             PartitionKey: "partition-key",
           },
         ],

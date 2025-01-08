@@ -1,6 +1,6 @@
 import {
-  GetShardIteratorCommand,
   GetRecordsCommand,
+  GetShardIteratorCommand,
   KinesisClient,
 } from "@aws-sdk/client-kinesis";
 import { GlueSchemaRegistry } from "glue-schema-registry";
@@ -9,19 +9,17 @@ import { Type } from "avsc";
 import { config } from "./config";
 import { IkeTestNamespace } from "./consumer.gen";
 
+const registry = new GlueSchemaRegistry<IkeTestNamespace.TestProperty>(
+  config.registryName(),
+  {
+    region: config.awsRegion(),
+  }
+);
+const schema = Type.forSchema(JSON.parse(IkeTestNamespace.TestPropertySchema));
+
+const kinesis = new KinesisClient({ region: config.awsRegion() });
+
 (async () => {
-  const registry = new GlueSchemaRegistry<IkeTestNamespace.TestProperty>(
-    config.registryName(),
-    {
-      region: config.awsRegion(),
-    }
-  );
-  const schema = Type.forSchema(
-    JSON.parse(IkeTestNamespace.TestPropertySchema)
-  );
-
-  const kinesis = new KinesisClient({ region: config.awsRegion() });
-
   const receiveMessages = async (
     streamName: string,
     shardId: string,
@@ -34,7 +32,7 @@ import { IkeTestNamespace } from "./consumer.gen";
           ShardId: shardId,
           ...(startingSequenceNumber
             ? {
-                ShardIteratorType: "AT_SEQUENCE_NUMBER",
+                ShardIteratorType: "AFTER_SEQUENCE_NUMBER",
                 StartingSequenceNumber: startingSequenceNumber,
               }
             : { ShardIteratorType: "LATEST" }),
@@ -56,20 +54,20 @@ import { IkeTestNamespace } from "./consumer.gen";
       let lastSequenceNumber: string | undefined;
 
       for (const record of records) {
-        lastSequenceNumber = record.SequenceNumber;
-
-        if (!record.Data) {
+        if (!record.Data || !record.SequenceNumber) {
           continue;
         }
+
+        lastSequenceNumber = record.SequenceNumber;
 
         const message = await registry.decode(Buffer.from(record.Data), schema);
         console.log({ message, lastSequenceNumber });
       }
 
-      return lastSequenceNumber;
+      return lastSequenceNumber ?? startingSequenceNumber;
     }
 
-    return;
+    return startingSequenceNumber;
   };
 
   let lastSequenceNumber: string | undefined;
