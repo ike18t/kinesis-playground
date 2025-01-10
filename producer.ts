@@ -55,7 +55,7 @@ const kinesis = new KinesisClient({ region: config.awsRegion() });
         Records: [
           {
             Data: await registry.encode(schemaId, message),
-            PartitionKey: "partition-key",
+            PartitionKey: `partition-key-${[Math.floor(Math.random() * 10)]}`,
           },
         ],
       })

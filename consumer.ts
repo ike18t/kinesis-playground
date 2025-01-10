@@ -2,6 +2,7 @@ import {
   GetRecordsCommand,
   GetShardIteratorCommand,
   KinesisClient,
+  ListShardsCommand,
 } from "@aws-sdk/client-kinesis";
 import { GlueSchemaRegistry } from "glue-schema-registry";
 import { Type } from "avsc";
@@ -61,7 +62,7 @@ const kinesis = new KinesisClient({ region: config.awsRegion() });
         lastSequenceNumber = record.SequenceNumber;
 
         const message = await registry.decode(Buffer.from(record.Data), schema);
-        console.log({ message, lastSequenceNumber });
+        console.log({ message, shardId, lastSequenceNumber });
       }
 
       return lastSequenceNumber ?? startingSequenceNumber;
@@ -71,11 +72,17 @@ const kinesis = new KinesisClient({ region: config.awsRegion() });
   };
 
   let lastSequenceNumber: string | undefined;
-  while (true) {
-    lastSequenceNumber = await receiveMessages(
-      config.streamName(),
-      "shardId-000000000000",
-      lastSequenceNumber
-    );
-  }
+  const { Shards: shards } = await kinesis.send(
+    new ListShardsCommand({ StreamName: config.streamName() })
+  );
+
+  shards?.map(async ({ ShardId: shardId }) => {
+    while (true && shardId) {
+      lastSequenceNumber = await receiveMessages(
+        config.streamName(),
+        shardId,
+        lastSequenceNumber
+      );
+    }
+  });
 })();
