@@ -12,7 +12,7 @@
     "@aws-sdk/client-kinesis": "^3.723.0",
     "dotenv-flow": "^4.1.0",
     "env-var": "^7.5.0",
-    "glue-schema-registry": "file:./glue-schema-registry"
+    "@meinestadt.de/glue-schema-registry": "^2.1.0"
   },
   "author": "",
   "license": "ISC",

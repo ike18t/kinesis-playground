@@ -3,7 +3,7 @@ import {
   GlueSchemaRegistry,
   SchemaType,
   SchemaCompatibilityType,
-} from "glue-schema-registry";
+} from "@meinestadt.de/glue-schema-registry";
 import { Type } from "avsc";
 
 import { IkeTestNamespace } from "./schema.avsc.ts";
@@ -62,10 +62,10 @@ const kinesis = new KinesisClient({ region: config.awsRegion() });
     );
 
     result.Records?.forEach((record) => {
-      console.log(`Record message ${JSON.stringify(message, null, 2)}`);
-      record.ShardId && console.log(`Record sent to shard ${record.ShardId}`);
-      record.SequenceNumber &&
-        console.log(`Record seq ${record.SequenceNumber}`);
+      console.log(`\nRecord sent`);
+      console.log(`message ${JSON.stringify(message, null, 2)}`);
+      record.ShardId && console.log(`shard ${record.ShardId}`);
+      record.SequenceNumber && console.log(`seq ${record.SequenceNumber}`);
     });
   };
 
